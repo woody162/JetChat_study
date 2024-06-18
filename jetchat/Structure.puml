@@ -1,0 +1,388 @@
+@startuml
+
+package jetchat {
+
+    class MainViewModel {
+        - _drawerShouldBeOpened: MutableStateFlow<Boolean>
+        + drawerShouldBeOpened: StateFlow<Boolean>
+        + openDrawer(): Unit
+        + resetOpenDrawerAction(): Unit
+    }
+
+    class NavActivity {
+        - viewModel: MainViewModel
+        - analytics: FirebaseAnalytics
+        + onCreate(savedInstanceState: Bundle?): Unit
+        + onSupportNavigateUp(): Boolean
+        - findNavController(): NavController
+    }
+
+    class UiExtras {
+        + FunctionalityNotAvailablePopup(onDismiss: () -> Unit): Unit
+    }
+
+    class FirebaseAnalytics
+    class ComposeView
+    class AndroidViewBinding
+    class NavController
+    class NavHostFragment
+
+    package components {
+        class AnimatingFabContent {
+            + AnimatingFabContent(
+                icon: @Composable () -> Unit,
+                text: @Composable () -> Unit,
+                modifier: Modifier = Modifier,
+                extended: Boolean = true
+            ): Unit
+        }
+
+        class BaselineHeightModifier {
+            + BaselineHeightModifier(heightFromBaseline: Dp): LayoutModifier
+        }
+
+        class JetchatAppBar {
+            + JetchatAppBar(
+                modifier: Modifier = Modifier,
+                scrollBehavior: TopAppBarScrollBehavior? = null,
+                onNavIconPressed: () -> Unit = { },
+                title: @Composable () -> Unit,
+                actions: @Composable RowScope.() -> Unit = {}
+            ): Unit
+        }
+
+        class JetchatDrawer {
+            + JetchatDrawer(
+                drawerState: DrawerState = rememberDrawerState(initialValue = Closed),
+                onProfileClicked: (String) -> Unit,
+                onChatClicked: (String) -> Unit,
+                content: @Composable () -> Unit
+            ): Unit
+        }
+
+        class JetchatIcon {
+            + JetchatIcon(contentDescription: String?, modifier: Modifier = Modifier): Unit
+        }
+
+        class JetchatScaffold
+    }
+
+    package conversation {
+        class Conversation {
+            + ConversationContent(
+                uiState: ConversationUiState,
+                navigateToProfile: (String) -> Unit,
+                modifier: Modifier = Modifier,
+                onNavIconPressed: () -> Unit = { }
+            ): Unit
+            + ChannelNameBar(
+                channelName: String,
+                channelMembers: Int,
+                modifier: Modifier = Modifier,
+                scrollBehavior: TopAppBarScrollBehavior? = null,
+                onNavIconPressed: () -> Unit = { }
+            ): Unit
+            + Messages(
+                messages: List<Message>,
+                navigateToProfile: (String) -> Unit,
+                scrollState: LazyListState,
+                modifier: Modifier = Modifier
+            ): Unit
+            + Message(
+                onAuthorClick: (String) -> Unit,
+                msg: Message,
+                isUserMe: Boolean,
+                isFirstMessageByAuthor: Boolean,
+                isLastMessageByAuthor: Boolean
+            ): Unit
+            + AuthorAndTextMessage(
+                msg: Message,
+                isUserMe: Boolean,
+                isFirstMessageByAuthor: Boolean,
+                isLastMessageByAuthor: Boolean,
+                authorClicked: (String) -> Unit,
+                modifier: Modifier = Modifier
+            ): Unit
+            + DayHeader(dayString: String): Unit
+            + ChatItemBubble(
+                message: Message,
+                isUserMe: Boolean,
+                authorClicked: (String) -> Unit
+            ): Unit
+            + ClickableMessage(
+                message: Message,
+                isUserMe: Boolean,
+                authorClicked: (String) -> Unit
+            ): Unit
+            + ConversationPreview(): Unit
+            + ChannelBarPrev(): Unit
+            + DayHeaderPrev(): Unit
+        }
+
+        class ConversationFragment {
+            - activityViewModel: MainViewModel
+            + onCreateView(
+                inflater: LayoutInflater,
+                container: ViewGroup?,
+                savedInstanceState: Bundle?
+            ): View
+        }
+
+        class ConversationUiState {
+            - database: DatabaseReference
+            - myRef: DatabaseReference
+            - _messages: MutableList<Message>
+            + messages: List<Message>
+            + childEventListenerRecycler(): Unit
+            + addMessage(msg: Message): Unit
+        }
+
+        class JumpToBottom {
+            + JumpToBottom(
+                enabled: Boolean,
+                onClicked: () -> Unit,
+                modifier: Modifier = Modifier
+            ): Unit
+            + JumpToBottomPreview(): Unit
+        }
+
+        class MessageFormatter {
+            + messageFormatter(
+                text: String,
+                primary: Boolean
+            ): AnnotatedString
+        }
+
+        class RecordButton {
+            + RecordButton(
+                recording: Boolean,
+                swipeOffset: () -> Float,
+                onSwipeOffsetChange: (Float) -> Unit,
+                onStartRecording: () -> Boolean,
+                onFinishRecording: () -> Unit,
+                onCancelRecording: () -> Unit,
+                modifier: Modifier = Modifier
+            ): Unit
+        }
+
+        class UserInput {
+            + UserInput(
+                onMessageSent: (String) -> Unit,
+                modifier: Modifier = Modifier,
+                resetScroll: () -> Unit = {}
+            ): Unit
+            + FunctionalityNotAvailablePanel(): Unit
+            + UserInputSelector(
+                onSelectorChange: (InputSelector) -> Unit,
+                sendMessageEnabled: Boolean,
+                onMessageSent: () -> Unit,
+                currentInputSelector: InputSelector,
+                modifier: Modifier = Modifier
+            ): Unit
+            + InputSelectorButton(
+                onClick: () -> Unit,
+                icon: ImageVector,
+                description: String,
+                selected: Boolean,
+                modifier: Modifier = Modifier
+            ): Unit
+            + NotAvailablePopup(onDismissed: () -> Unit): Unit
+            + UserInputText(
+                keyboardType: KeyboardType,
+                onTextChanged: (TextFieldValue) -> Unit,
+                textFieldValue: TextFieldValue,
+                keyboardShown: Boolean,
+                onTextFieldFocused: (Boolean) -> Unit,
+                focusState: Boolean
+            ): Unit
+            + RecordingIndicator(swipeOffset: () -> Float): Unit
+            + EmojiSelector(
+                onTextAdded: (String) -> Unit,
+                focusRequester: FocusRequester
+            ): Unit
+            + ExtendedSelectorInnerButton(
+                text: String,
+                onClick: () -> Unit,
+                selected: Boolean,
+                modifier: Modifier = Modifier
+            ): Unit
+            + EmojiTable(
+                onTextAdded: (String) -> Unit,
+                modifier: Modifier = Modifier
+            ): Unit
+        }
+    }
+
+    package data {
+        class FakeData {
+            + initialMessages: List<Message>
+            + exampleUiState: ConversationUiState
+            + colleagueProfile: ProfileScreenState
+            + meProfile: ProfileScreenState
+            + EMOJIS: object {
+                + EMOJI_PINK_HEART: String
+                + EMOJI_MELTING: String
+                + EMOJI_CLOUDS: String
+                + EMOJI_FLAMINGO: String
+                + EMOJI_POINTS: String
+            }
+        }
+    }
+
+    package profile {
+        class Previews {
+            + ProfilePreview340(): Unit
+            + ProfilePreview480Me(): Unit
+            + ProfilePreview480Other(): Unit
+            + ProfilePreview340MeDark(): Unit
+            + ProfilePreview480MeDark(): Unit
+            + ProfilePreview480OtherDark(): Unit
+        }
+
+        class Profile {
+            + ProfileScreen(
+                userData: ProfileScreenState,
+                nestedScrollInteropConnection: NestedScrollConnection
+            ): Unit
+            + UserInfoFields(
+                userData: ProfileScreenState,
+                containerHeight: Dp
+            ): Unit
+            + NameAndPosition(
+                userData: ProfileScreenState
+            ): Unit
+            + Name(
+                userData: ProfileScreenState,
+                modifier: Modifier
+            ): Unit
+            + Position(
+                userData: ProfileScreenState,
+                modifier: Modifier
+            ): Unit
+            + ProfileHeader(
+                scrollState: ScrollState,
+                data: ProfileScreenState,
+                containerHeight: Dp
+            ): Unit
+            + ProfileProperty(
+                label: String,
+                value: String,
+                isLink: Boolean
+            ): Unit
+            + ProfileError(): Unit
+            + ProfileFab(
+                extended: Boolean,
+                userIsMe: Boolean,
+                modifier: Modifier,
+                onFabClicked: () -> Unit
+            ): Unit
+        }
+
+        class ProfileScreenState {
+            + userId: String
+            + photo: Int?
+            + name: String
+            + status: String
+            + displayName: String
+            + position: String
+            + twitter: String
+            + timeZone: String?
+            + commonChannels: String?
+            + isMe(): Boolean
+        }
+
+        class ProfileFragment {
+            - viewModel: ProfileViewModel
+            - activityViewModel: MainViewModel
+            + onAttach(context: Context): Unit
+            + onCreateView(
+                inflater: LayoutInflater,
+                container: ViewGroup?,
+                savedInstanceState: Bundle?
+            ): View
+        }
+
+        class ProfileViewModel {
+            - userId: String
+            + setUserId(newUserId: String?): Unit
+            - _userData: MutableLiveData<ProfileScreenState>
+            + userData: LiveData<ProfileScreenState>
+        }
+    }
+
+    package theme {
+        class Color {
+            + Blue10: Color
+            + Blue20: Color
+            + Blue30: Color
+            + Blue40: Color
+            + Blue80: Color
+            + Blue90: Color
+            + DarkBlue10: Color
+            + DarkBlue20: Color
+            + DarkBlue30: Color
+            + DarkBlue40: Color
+            + DarkBlue80: Color
+            + DarkBlue90: Color
+            + Yellow10: Color
+            + Yellow20: Color
+            + Yellow30: Color
+            + Yellow40: Color
+            + Yellow80: Color
+            + Yellow90: Color
+            + Red10: Color
+            + Red20: Color
+            + Red30: Color
+            + Red40: Color
+            + Red80: Color
+            + Red90: Color
+            + Grey10: Color
+            + Grey20: Color
+            + Grey80: Color
+            + Grey90: Color
+            + Grey95: Color
+            + Grey99: Color
+            + BlueGrey30: Color
+            + BlueGrey50: Color
+            + BlueGrey60: Color
+            + BlueGrey80: Color
+            + BlueGrey90: Color
+        }
+
+        class Themes {
+            + JetchatDarkColorScheme: ColorScheme
+            + JetchatLightColorScheme: ColorScheme
+            + JetchatTheme(
+                isDarkTheme: Boolean,
+                isDynamicColor: Boolean,
+                content: @Composable () -> Unit
+            ): Unit
+        }
+
+        class Typography {
+            + provider: GoogleFont.Provider
+            + MontserratFont: GoogleFont
+            + KarlaFont: GoogleFont
+            + MontserratFontFamily: FontFamily
+            + KarlaFontFamily: FontFamily
+            + JetchatTypography: Typography
+        }
+    }
+
+    ' 添加類之間的關係
+    NavActivity --> MainViewModel
+    NavActivity --> FirebaseAnalytics
+    NavActivity --> ComposeView
+    NavActivity --> AndroidViewBinding
+    NavActivity --> NavController
+    NavActivity --> NavHostFragment
+    JetchatDrawer --> NavActivity
+    ProfileFragment --> MainViewModel
+    ProfileFragment --> ProfileViewModel
+    ProfileFragment --> JetchatAppBar
+
+    ' 可以根據需要添加更多關係
+
+}
+
+@enduml
